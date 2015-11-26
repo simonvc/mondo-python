@@ -1,7 +1,7 @@
 import requests
 
 class MondoClient():
-    url = 'https://staging-api.gmon.io/'
+    url = 'https://production-api.gmon.io/'
 
     def __init__(self, url = None):
         if url != None:

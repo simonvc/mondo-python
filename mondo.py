@@ -14,7 +14,7 @@ class MondoClient():
         payload = {'grant_type': 'password', 'client_id': client_id, 'client_secret': client_secret, 'username': username, 'password': password }
         r = requests.post(self.url + '/oauth2/token', payload)
 
-        return r
+        return r.json()
 
     def refresh_token(self, client_id, client_secret, refresh_token):
         """
@@ -23,7 +23,7 @@ class MondoClient():
         payload = {'grant_type': 'refresh_token', 'client_id': client_id, 'client_secret': client_secret, 'refresh_token': refresh_token }
         r = requests.post(self.url + '/oauth2/token', payload)
 
-        return r
+        return r.json()
 
     def transaction(self, id, access_token, merchant = True):
         """
@@ -37,7 +37,7 @@ class MondoClient():
 
         r = requests.get(self.url + '/transactions/' + id, params=params, headers=headers)
 
-        return r
+        return r.json()
 
     def transactions(self, access_token, account_id, limit = 100, since = None, before = None):
         """
@@ -54,7 +54,7 @@ class MondoClient():
 
         r = requests.get(self.url + '/transactions', params=params, headers=headers)
 
-        return r
+        return r.json()
 
     def authenticate(self, access_token, client_id, user_id):
         """
@@ -64,7 +64,7 @@ class MondoClient():
 
         r = requests.get(self.url + '/ping/whoami', headers=headers)
 
-        return r
+        return r.json()
 
     def accounts(self, access_token):
         """
@@ -74,7 +74,7 @@ class MondoClient():
 
         r = requests.get(self.url + '/accounts', headers=headers)
 
-        return r
+        return r.json()
 
     def create_feed_item(self, access_token, account_id, title, image_url, background_color = '#FCF1EE', body_color = '#FCF1EE', title_color = '#333', body = ''):
         """

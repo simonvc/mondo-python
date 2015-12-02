@@ -1,0 +1,10 @@
+{"CLIENT":"<API CLIENT ID HERE>",
+"SECRET":"<CLIENT API SECRET HERE>",
+"ACCOUNT":"johnny@apple.com",
+"PASSWORD":"password"
+}
+
+# enter your details above
+# Account and password are optional defaults for API calls, you can delete them
+# rename this file config.json
+#...and delete this text

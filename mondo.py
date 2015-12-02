@@ -18,15 +18,21 @@ API_ERRORS = {
 }
 
 class MondoClient():
+    """
+    Create a client connection and get the token for a specific account
+    using either data in config.json or an account email / password in the class call
+    e.g. connection = MondoClient('johnny@apple.com', 'passw0rd') or
+    connection = MondoClient() - which uses info from config.json
+    """
     url = 'https://production-api.gmon.io/'
 
-    def __init__(self, url=None):
+    def __init__(self, account_id=None, acc_password=None, url=None):
         if url is not None:
             self.url = url
 
         # grab the access token on instantiating the class
-        # Using config.json to supply CLIENT, SECRET
-        # ... and optionally ACCOUNT & PASSWORD
+        # Using config.json to supply client, secret
+        # ... and optionally account & password
         try:
             with open('./config.json') as data_file:
                 config = json.load(data_file)
@@ -34,20 +40,26 @@ class MondoClient():
             raise Exception('No config.json file found')
 
         try:
-            self.CLIENT = config['CLIENT']
-            self.SECRET = config['SECRET']
+            self.client = config['client']
+            self.secret = config['secret']
         except KeyError:
-            raise Exception('define CLIENT / SECRET in config.json')
+            raise Exception('define client / secret in config.json')
 
-        if 'ACCOUNT' in config:
-            self.ACCOUNT = config['ACCOUNT']
+        if account_id is None:
+            if 'account' in config:
+                self.account = config['account']
+            else:
+                raise Exception('No account email supplied')
         else:
-            self.ACCOUNT = None
+            self.account = account_id
 
-        if 'PASSWORD' in config:
-            self.PASSWORD = config['PASSWORD']
+        if acc_password is None:
+            if 'password' in config:
+                self.password = config['password']
+            else:
+                raise Exception('No account password supplied')
         else:
-            self.PASSWORD = None
+            self.password = acc_password
 
         try:
             token_response = self.get_token()
@@ -63,13 +75,13 @@ class MondoClient():
         Acquire an access token - uses config.JSON file for data by default
         """
         if client_id is None:
-            client_id = self.CLIENT
+            client_id = self.client
         if client_secret is None:
-            client_secret = self.SECRET
+            client_secret = self.secret
         if username is None:
-            username = self.ACCOUNT
+            username = self.account
         if password is None:
-            password = self.PASSWORD
+            password = self.password
 
         payload = {'grant_type': 'password',
                    'client_id': client_id,
@@ -94,9 +106,9 @@ class MondoClient():
         """
 
         if client_id is None:
-            client_id = self.CLIENT
+            client_id = self.client
         if client_secret is None:
-            client_secret = self.SECRET
+            client_secret = self.secret
         if refresh_token is None:
             refresh_token = self.refresh_token
 
@@ -170,9 +182,9 @@ class MondoClient():
         if access_token is None:
             access_token = self.token
         if client_id is None:
-            client_id = self.CLIENT
+            client_id = self.client
         if user_id is None:
-            user_id = self.ACCOUNT
+            user_id = self.account
 
         headers = {'Authorization': 'Bearer ' + str(access_token)}
         r = requests.get(self.url + '/ping/whoami', headers=headers)

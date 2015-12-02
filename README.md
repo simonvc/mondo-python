@@ -8,13 +8,13 @@ See the docs https://getmondo.co.uk/docs for details.
 2. edit the config.json-editMe- 
     enter your API credentials in that file
     (you can also put your account details there as defaults)
-    rename it config.json
-3. Use the SDK for fun and profit
+3. save / rename it config.json and save in same dir as mondo.py
+3. Use the SDK for fun, profit, and global domination
 
 ## How do I load the SDK
 
 If you have your API credentials in config.json
-and your account email address and password you can just do this:
+and have included your Mondo account email address and password you can just do this:
 ```
 from mondo import MondoClient
 account = MondoClient()
@@ -45,7 +45,7 @@ Look at the code and https://getmondo.co.uk/docs for information on what paramet
 It's all taken care of.
 If a token expires the code will use the refresh call to get a new one
 
-## Example code
+## Example starter code
 ```
 from mondo import MondoClient
 account = MondoClient()
@@ -56,6 +56,8 @@ print trx
 singleID = trx[1]['id']
 single = account.get_transaction(singleID)
 print single
+
+print account.get_accounts()
 
 # this autorefreshes tokens as needed
 

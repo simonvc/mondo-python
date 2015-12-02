@@ -2,6 +2,7 @@
 
 A simple python SDK for dealing with the Mondo API
 It deals with tokens and token refreshing behind the scenes
+
 See the docs https://getmondo.co.uk/docs for details.
 
 1. Download the repository

@@ -1,6 +1,21 @@
 import requests
 import json
 
+API_ERRORS = {
+    400: "400: Bad Req. Your request has missing parameters or is malformed",
+    401: "401: Unauthorized. Your request is not authenticated.",
+    403: "403: Forbidden. Your request is authenticated \
+          but has insufficient permissions.",
+    405: "405: Method Not Allowed. You are using the incorrect HTTP verb. \
+        Double check whether it should be POST/GET/DELETE/etc.",
+    404: "404: Page Not Found. The endpoint requested does not exist.",
+    406: "406: Not Acceptable. Your application does not accept the content \
+        format returned according to the Accept headers sent in the request.",
+    429: "425: Too Many Requests. Your application is exceeding its rate limit. \
+          Back off, buddy.",
+    500: "500: Internal Server Error. Something is wrong on our end. Whoopsie",
+    504: "504 - Gateway Timeout Something has timed out on our end. Whoopsie"
+}
 
 class MondoClient():
     url = 'https://production-api.gmon.io/'
@@ -10,15 +25,24 @@ class MondoClient():
             self.url = url
 
         # grab the access token on instantiating the class
-        # Using config.json to supply CLIENT, SECRET, ACCOUNT, PASSWORD
+        # Using config.json to supply CLIENT, SECRET
+        # ... and optionally ACCOUNT & PASSWORD
         try:
             with open('./config.json') as data_file:
                 config = json.load(data_file)
             try:
                 self.CLIENT = config['CLIENT']
                 self.SECRET = config['SECRET']
-                self.ACCOUNT = config['ACCOUNT']
-                self.PASSWORD = config['PASSWORD']
+
+                if 'ACCOUNT' in config:
+                    self.ACCOUNT = config['ACCOUNT']
+                else:
+                    self.ACCOUNT = None
+
+                if 'PASSWORD' in config:
+                    self.PASSWORD = config['PASSWORD']
+                else:
+                    self.PASSWORD = None
 
                 token_response = MondoClient.get_token(self)
                 self.token = token_response['access_token']
@@ -51,7 +75,10 @@ class MondoClient():
                    'password': password}
         r = requests.post(self.url + '/oauth2/token', payload)
 
-        return r.json()
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return (API_ERRORS[r.status_code], r.json)
 
     def refresh_token(self, client_id=None, client_secret=None,
                       refresh_token=None):
@@ -74,9 +101,12 @@ class MondoClient():
                    'refresh_token': refresh_token}
         r = requests.post(self.url + '/oauth2/token', payload)
 
-        return r.json()
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return (API_ERRORS[r.status_code], r.json)
 
-    def transaction(self, account_id, access_token=None, merchant=True):
+    def get_transaction(self, account_id, access_token=None, merchant=True):
         """
         Get details about a transaction
         Uses config.json secrets by default
@@ -95,10 +125,13 @@ class MondoClient():
         r = requests.get(self.url + '/transactions/' + account_id,
                          params=params, headers=headers)
 
-        return r.json()
+        if r.status_code == 200:
+            return r.json()['transaction']
+        else:
+            return (API_ERRORS[r.status_code], r.json)
 
-    def transactions(self, account_id, limit=100, since=None,
-                     before=None, access_token=None):
+    def get_transactions(self, account_id, limit=100, since=None,
+                         before=None, access_token=None):
         """
         List transactions
         transactions(account_id,[limit],[since],[before],[token])
@@ -118,11 +151,15 @@ class MondoClient():
         r = requests.get(self.url + '/transactions',
                          params=params, headers=headers)
 
-        return r.json()
+        if r.status_code == 200:
+            return r.json()['transactions']
+        else:
+            return (API_ERRORS[r.status_code], r.json())
 
     def authenticate(self, access_token=None, client_id=None, user_id=None):
         """
         authenticate user
+        instance.authenticate([access_token], [client_id], [user_id])
         """
 
         if access_token is None:
@@ -133,16 +170,18 @@ class MondoClient():
             user_id = self.ACCOUNT
 
         headers = {'Authorization': 'Bearer ' + str(access_token)}
-
         r = requests.get(self.url + '/ping/whoami', headers=headers)
 
-        return r.json()
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return (API_ERRORS[r.status_code], r.json())
 
-    def accounts(self, access_token=None):
+    def get_accounts(self, access_token=None):
         """
         detailed information about customer's accounts
         uses config.json data by default
-        accounts(access_token)
+        instance.get_accounts([access_token])
         """
         if access_token is None:
             access_token = self.token
@@ -151,7 +190,28 @@ class MondoClient():
 
         r = requests.get(self.url + '/accounts', headers=headers)
 
-        return r.json()
+        if r.status_code == 200:
+            return r.json()['accounts']
+        else:
+            return (API_ERRORS[r.status_code], r.json())
+
+    def get_primary_accountID(self, access_token=None):
+        """
+        Get ID from the first account listed against an access token
+        instance.get_primary_accountID([access_token])
+        """
+
+        if access_token is None:
+            access_token = self.token
+
+        headers = {'Authorization': 'Bearer ' + access_token}
+
+        r = requests.get(self.url + '/accounts', headers=headers)
+
+        if r.status_code == 200:
+            return r.json()['accounts'][0]['id']
+        else:
+            return (API_ERRORS[r.status_code], r.json())
 
     def create_feed_item(self, access_token, account_id, title, image_url,
                          background_color='#FCF1EE', body_color='#FCF1EE',
@@ -174,7 +234,10 @@ class MondoClient():
 
         r = requests.post(self.url + '/feed', data=payload, headers=headers)
 
-        return r
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return (API_ERRORS[r.status_code], r.json())
 
     def register_webhook(self, account_id, url, access_token):
         """
@@ -189,5 +252,7 @@ class MondoClient():
 
         r = requests.post(self.url + '/feed', data=payload, headers=headers)
 
-        return r
-
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return (API_ERRORS[r.status_code], r.json())

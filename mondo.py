@@ -1,5 +1,6 @@
 import requests
 import json
+import datetime
 
 API_ERRORS = {
     400: "400: Bad Req. Your request has missing parameters or is malformed",
@@ -43,7 +44,7 @@ class MondoClient():
             self.client = config['client']
             self.secret = config['secret']
         except KeyError:
-            raise Exception('define client / secret in config.json')
+            raise Exception('define API client / secret in config.json')
 
         if account_id is None:
             if 'account' in config:
@@ -61,11 +62,18 @@ class MondoClient():
         else:
             self.password = acc_password
 
+        # With all the variables in place try to get a token for the connection
         try:
             token_response = self.get_token()
             self.token = token_response['access_token']
             self.refresh_token = token_response['refresh_token']
-            self.token_expires = token_response['expires_in']
+
+            # set the token expiry time based on time + token expiry in seconds
+            # This is used in deliver_token() later
+            now = datetime.datetime.now()
+            delta = datetime.timedelta(seconds=token_response['expires_in'])
+            self.token_expires = now + delta
+
         except TypeError:
             raise Exception(token_response)
 
@@ -98,7 +106,7 @@ class MondoClient():
         else:
             return (API_ERRORS[r.status_code], r.json())
 
-    def refresh_access_token(self, client_id=None, client_secret=None,
+    def token_refresh(self, client_id=None, client_secret=None,
                              refresh_token=None):
         """
         Refresh a previously acquired token
@@ -133,7 +141,7 @@ class MondoClient():
         """
 
         if access_token is None:
-            access_token = self.token
+            access_token = self.deliver_token()
 
         headers = {'Authorization': 'Bearer ' + access_token}
         params = {}
@@ -156,7 +164,7 @@ class MondoClient():
         """
 
         if access_token is None:
-            access_token = self.token
+            access_token = self.deliver_token()
 
         headers = {'Authorization': 'Bearer ' + access_token}
         params = {'limit': limit, "account_id": account_id}
@@ -180,7 +188,7 @@ class MondoClient():
         """
 
         if access_token is None:
-            access_token = self.token
+            access_token = self.deliver_token()
         if client_id is None:
             client_id = self.client
         if user_id is None:
@@ -200,7 +208,7 @@ class MondoClient():
         uses config.json data by default
         """
         if access_token is None:
-            access_token = self.token
+            access_token = self.deliver_token()
 
         headers = {'Authorization': 'Bearer ' + access_token}
 
@@ -217,7 +225,7 @@ class MondoClient():
         """
 
         if access_token is None:
-            access_token = self.token
+            access_token = self.deliver_token()
 
         headers = {'Authorization': 'Bearer ' + access_token}
 
@@ -228,12 +236,18 @@ class MondoClient():
         else:
             return (API_ERRORS[r.status_code], r.json())
 
-    def create_feed_item(self, access_token, account_id, title, image_url,
-                         background_color='#FCF1EE', body_color='#FCF1EE',
-                         title_color='#333', body=''):
+    def create_feed_item(self, title, image_url, background_color='#FCF1EE',
+                         body_color='#FCF1EE', title_color='#333',
+                         body='', account_id=None, access_token=None):
         """
         publish a new feed entry
         """
+
+        if access_token is None:
+            access_token = self.deliver_token()
+        if account_id is None:
+            account_id = self.get_primary_accountID()
+
         headers = {'Authorization': 'Bearer ' + access_token}
 
         payload = {
@@ -254,13 +268,15 @@ class MondoClient():
         else:
             return (API_ERRORS[r.status_code], r.json())
 
-    def register_webhook(self, account_id, url, access_token):
+    def register_webhook(self, url, account_id=None, access_token=None):
         """
         register a webhook
         instance.register_webhook(account_id, url, [access_token])
         """
         if access_token is None:
-            access_token = self.token
+            access_token = self.deliver_token()
+        if account_id is None:
+            account_id = self.get_primary_accountID()
 
         headers = {'Authorization': 'Bearer ' + access_token}
         payload = {"account_id": account_id, "url": url}
@@ -271,3 +287,9 @@ class MondoClient():
             return r.json()
         else:
             return (API_ERRORS[r.status_code], r.json())
+
+    def deliver_token(self):
+        if datetime.datetime.now() > self.token_expires:
+            self.token_refresh()
+        return self.token
+

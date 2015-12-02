@@ -30,34 +30,37 @@ class MondoClient():
         try:
             with open('./config.json') as data_file:
                 config = json.load(data_file)
-            try:
-                self.CLIENT = config['CLIENT']
-                self.SECRET = config['SECRET']
-
-                if 'ACCOUNT' in config:
-                    self.ACCOUNT = config['ACCOUNT']
-                else:
-                    self.ACCOUNT = None
-
-                if 'PASSWORD' in config:
-                    self.PASSWORD = config['PASSWORD']
-                else:
-                    self.PASSWORD = None
-
-                token_response = MondoClient.get_token(self)
-                self.token = token_response['access_token']
-                self.refresh_token = token_response['refresh_token']
-                self.token_expires = token_response['expires_in']
-            except KeyError:
-                raise Exception('define secret keys in config.json')
         except IOError:
             raise Exception('No config.json file found')
+
+        try:
+            self.CLIENT = config['CLIENT']
+            self.SECRET = config['SECRET']
+        except KeyError:
+            raise Exception('define CLIENT / SECRET in config.json')
+
+        if 'ACCOUNT' in config:
+            self.ACCOUNT = config['ACCOUNT']
+        else:
+            self.ACCOUNT = None
+
+        if 'PASSWORD' in config:
+            self.PASSWORD = config['PASSWORD']
+        else:
+            self.PASSWORD = None
+
+        try:
+            token_response = self.get_token()
+            self.token = token_response['access_token']
+            self.refresh_token = token_response['refresh_token']
+            self.token_expires = token_response['expires_in']
+        except KeyError:
+            raise Exception(token_response)
 
     def get_token(self, client_id=None, client_secret=None,
                   username=None, password=None):
         """
         Acquire an access token - uses config.JSON file for data by default
-        get_token(client_ID, client_secret, username, password)
         """
         if client_id is None:
             client_id = self.CLIENT
@@ -85,7 +88,6 @@ class MondoClient():
         """
         Refresh a previously acquired token
         use config.json data by default
-        refresh_token(client_id, client_secret, refresh_token)
         """
 
         if client_id is None:
@@ -110,7 +112,6 @@ class MondoClient():
         """
         Get details about a transaction
         Uses config.json secrets by default
-        transaction(id, access_token, merchant)
         """
 
         if access_token is None:
@@ -134,7 +135,6 @@ class MondoClient():
                          before=None, access_token=None):
         """
         List transactions
-        transactions(account_id,[limit],[since],[before],[token])
         """
 
         if access_token is None:
@@ -159,7 +159,6 @@ class MondoClient():
     def authenticate(self, access_token=None, client_id=None, user_id=None):
         """
         authenticate user
-        instance.authenticate([access_token], [client_id], [user_id])
         """
 
         if access_token is None:
@@ -181,7 +180,6 @@ class MondoClient():
         """
         detailed information about customer's accounts
         uses config.json data by default
-        instance.get_accounts([access_token])
         """
         if access_token is None:
             access_token = self.token
@@ -198,7 +196,6 @@ class MondoClient():
     def get_primary_accountID(self, access_token=None):
         """
         Get ID from the first account listed against an access token
-        instance.get_primary_accountID([access_token])
         """
 
         if access_token is None:

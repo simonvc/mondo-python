@@ -54,7 +54,7 @@ class MondoClient():
             self.token = token_response['access_token']
             self.refresh_token = token_response['refresh_token']
             self.token_expires = token_response['expires_in']
-        except KeyError:
+        except TypeError:
             raise Exception(token_response)
 
     def get_token(self, client_id=None, client_secret=None,
@@ -79,12 +79,15 @@ class MondoClient():
         r = requests.post(self.url + '/oauth2/token', payload)
 
         if r.status_code == 200:
-            return r.json()
+            response = r.json()
+            self.token = response['access_token']
+            self.refresh_token = response['refresh_token']
+            return response
         else:
-            return (API_ERRORS[r.status_code], r.json)
+            return (API_ERRORS[r.status_code], r.json())
 
-    def refresh_token(self, client_id=None, client_secret=None,
-                      refresh_token=None):
+    def refresh_access_token(self, client_id=None, client_secret=None,
+                             refresh_token=None):
         """
         Refresh a previously acquired token
         use config.json data by default
@@ -104,11 +107,14 @@ class MondoClient():
         r = requests.post(self.url + '/oauth2/token', payload)
 
         if r.status_code == 200:
-            return r.json()
+            response = r.json()
+            self.token = response['access_token']
+            self.refresh_token = response['refresh_token']
+            return response
         else:
-            return (API_ERRORS[r.status_code], r.json)
+            return (API_ERRORS[r.status_code], r.json())
 
-    def get_transaction(self, account_id, access_token=None, merchant=True):
+    def get_transaction(self, transaction_id, access_token=None, merchant=True):
         """
         Get details about a transaction
         Uses config.json secrets by default
@@ -123,7 +129,7 @@ class MondoClient():
         if merchant:
             params['expand[]'] = 'merchant'
 
-        r = requests.get(self.url + '/transactions/' + account_id,
+        r = requests.get(self.url + '/transactions/' + transaction_id,
                          params=params, headers=headers)
 
         if r.status_code == 200:

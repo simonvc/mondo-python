@@ -155,7 +155,7 @@ class MondoClient():
         if r.status_code == 200:
             return r.json()['transaction']
         else:
-            return (API_ERRORS[r.status_code], r.json)
+            return (API_ERRORS[r.status_code], r.json())
 
     def get_transactions(self, account_id, limit=100, since=None,
                          before=None, access_token=None):

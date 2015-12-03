@@ -70,6 +70,8 @@ print single
 
 ```
 
+Todo: 
+* Add in the functionality to list and remove webhooks
 
 Evolved from original code by Tito Miguel Costa ( https://bitbucket.org/titomiguelcosta/mondo )
 

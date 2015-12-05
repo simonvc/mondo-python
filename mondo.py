@@ -18,10 +18,11 @@ API_ERRORS = {
     504: "504 - Gateway Timeout Something has timed out on our end. Whoopsie"
 }
 
+
 class MondoClient():
     """
     Create a client connection and get the token for a specific account
-    using either data in config.json or an account email / password in the class call
+    using either data in config.json or email / password in the class call
     e.g. connection = MondoClient('johnny@apple.com', 'passw0rd') or
     connection = MondoClient() - which uses info from config.json
     """
@@ -107,7 +108,7 @@ class MondoClient():
             return (API_ERRORS[r.status_code], r.json())
 
     def token_refresh(self, client_id=None, client_secret=None,
-                             refresh_token=None):
+                      refresh_token=None):
         """
         Refresh a previously acquired token
         use config.json data by default

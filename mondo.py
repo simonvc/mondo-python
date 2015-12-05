@@ -105,7 +105,7 @@ class MondoClient():
             self.refresh_token = response['refresh_token']
             return response
         else:
-            return (API_ERRORS[r.status_code], r.json())
+            return API_ERRORS[r.status_code]
 
     def token_refresh(self, client_id=None, client_secret=None,
                       refresh_token=None):
@@ -133,7 +133,7 @@ class MondoClient():
             self.refresh_token = response['refresh_token']
             return response
         else:
-            return (API_ERRORS[r.status_code], r.json())
+            return API_ERRORS[r.status_code]
 
     def get_transaction(self, transaction_id, access_token=None, merchant=True):
         """
@@ -156,7 +156,7 @@ class MondoClient():
         if r.status_code == 200:
             return r.json()['transaction']
         else:
-            return (API_ERRORS[r.status_code], r.json())
+            return API_ERRORS[r.status_code]
 
     def get_transactions(self, account_id, limit=100, since=None,
                          before=None, access_token=None):
@@ -181,7 +181,7 @@ class MondoClient():
         if r.status_code == 200:
             return r.json()['transactions']
         else:
-            return (API_ERRORS[r.status_code], r.json())
+            return API_ERRORS[r.status_code]
 
     def authenticate(self, access_token=None, client_id=None, user_id=None):
         """
@@ -201,7 +201,7 @@ class MondoClient():
         if r.status_code == 200:
             return r.json()
         else:
-            return (API_ERRORS[r.status_code], r.json())
+            return API_ERRORS[r.status_code]
 
     def get_accounts(self, access_token=None):
         """
@@ -218,7 +218,7 @@ class MondoClient():
         if r.status_code == 200:
             return r.json()['accounts']
         else:
-            return (API_ERRORS[r.status_code], r.json())
+            return API_ERRORS[r.status_code]
 
     def get_primary_accountID(self, access_token=None):
         """
@@ -235,7 +235,7 @@ class MondoClient():
         if r.status_code == 200:
             return r.json()['accounts'][0]['id']
         else:
-            return (API_ERRORS[r.status_code], r.json())
+            return API_ERRORS[r.status_code]
 
     def create_feed_item(self, title, image_url, background_color='#FCF1EE',
                          body_color='#FCF1EE', title_color='#333',
@@ -267,7 +267,7 @@ class MondoClient():
         if r.status_code == 200:
             return r.json()
         else:
-            return (API_ERRORS[r.status_code], r.json())
+            return API_ERRORS[r.status_code]
 
     def register_webhook(self, url, account_id=None, access_token=None):
         """
@@ -282,12 +282,49 @@ class MondoClient():
         headers = {'Authorization': 'Bearer ' + access_token}
         payload = {"account_id": account_id, "url": url}
 
-        r = requests.post(self.url + '/feed', data=payload, headers=headers)
+        r = requests.post(self.url + '/webhooks', data=payload, headers=headers)
 
         if r.status_code == 200:
             return r.json()
         else:
-            return (API_ERRORS[r.status_code], r.json())
+            return API_ERRORS[r.status_code]
+
+    def list_webhooks(self, account_id=None, access_token=None):
+        """
+        List webhooks registered against an account
+        instance.list_webhooks([account_id], [access_token])
+        """
+        if account_id is None:
+            account_id = self.get_primary_accountID()
+        if access_token is None:
+            access_token = self.deliver_token()
+
+        headers = {'Authorization': 'Bearer ' + access_token}
+        params = {'account_id': account_id}
+
+        r = requests.get(self.url + '/webhooks', params=params, headers=headers)
+
+        if r.status_code == 200:
+            return r.json()['webhooks']
+        else:
+            return API_ERRORS[r.status_code]
+
+    def delete_webhook(self, webhook_id, access_token=None):
+        """
+        delete a webhook
+        instance.delete_webhook(webhook_id, [access_token])
+        """
+        if access_token is None:
+            access_token = self.deliver_token()
+
+        headers = {'Authorization': 'Bearer ' + access_token}
+
+        r = requests.delete(self.url + '/webhooks/' + webhook_id, headers=headers)
+
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return API_ERRORS[r.status_code]
 
     def deliver_token(self):
         if datetime.datetime.now() > self.token_expires:

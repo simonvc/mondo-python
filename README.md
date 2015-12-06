@@ -60,6 +60,7 @@ from mondo import MondoClient
 account = MondoClient()
 
 print account.get_accounts()
+first_account_id =  account.get_accounts()[0]['id']
 
 trx = account.get_transactions(account.get_primary_accountID(), limit=10)
 print trx
@@ -67,6 +68,17 @@ print trx
 singleID = trx[1]['id']
 single = account.get_transaction(singleID)
 print single
+
+
+account.register_webhook(url='http://mydomain.com/transactions')
+
+webhooks = account.list_webhooks()
+first_webhook = webhooks[0]['id']
+
+account.delete_webhook(first_webhook)
+
+
+
 
 ```
 

@@ -13,6 +13,6 @@ setup(
     )),
     url="https://github.com/simonvc/mondo-python",
     packages=["mondo"],
-    install_requires=['requests>=2.9'],
+    install_requires=['requests>=2.4.3'],
     license="MIT",
 )

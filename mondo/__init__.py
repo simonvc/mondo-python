@@ -373,6 +373,28 @@ class MondoClient():
         else:
             return API_ERRORS[r.status_code]
 
+    def get_balance(self, account_id=None, access_token=None):
+        """
+        detailed information about customer's accounts
+        uses config.json data by default
+        """
+        if access_token is None:
+            access_token = self.deliver_token()
+
+        if account_id is None:
+            account_id = self.get_primary_accountID()
+
+        headers = {'Authorization': 'Bearer ' + access_token}
+        params = {"account_id": account_id}
+
+        r = requests.get(self.url + '/balance', headers=headers, params=params)
+
+        if r.status_code == 200:
+            return r.json()
+        else:
+            return API_ERRORS[r.status_code]
+
+
     def deliver_token(self):
         if datetime.datetime.now() > self.token_expires:
             self.token_refresh()

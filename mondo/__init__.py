@@ -159,7 +159,7 @@ class MondoClient():
             return API_ERRORS[r.status_code]
 
     def get_transactions(self, account_id, limit=100, since=None,
-                         before=None, access_token=None):
+                         before=None, access_token=None, merchant=False):
         """
         List transactions
         """
@@ -169,6 +169,9 @@ class MondoClient():
 
         headers = {'Authorization': 'Bearer ' + access_token}
         params = {'limit': limit, "account_id": account_id}
+
+        if merchant:
+            params['expand[]'] = 'merchant'
 
         if since is not None:
             params['since'] = since
@@ -182,6 +185,50 @@ class MondoClient():
             return r.json()['transactions']
         else:
             return API_ERRORS[r.status_code]
+
+    def iter_transactions(self, account_id, limit=100, since=None,
+                          before=None, access_token=None, merchant=False):
+        """
+        Iterate through all transactions matching the pagination criteria.
+
+        Args:
+            account_id: The ID of the account whose transactions we want.
+            limit: The number of transactions per page request. If the page of
+                results we get back is full, we try asking for more.
+            since: A timestamp or object ID denoting the earliest transaction.
+                Timestamp limits are inclusive; object IDs are exclusive.
+            before: A timestamp all transactions must have been created before.
+            access_token: An access token override.
+            merchant: Whether to expand the merchant information.
+
+        Yields:
+            Individual transaction dicts, as per
+            https://getmondo.co.uk/docs/#transactions.
+
+        Raises:
+            RuntimeError: when get_transactions returns a string.
+        """
+        while True:
+            trans = self.get_transactions(account_id=account_id, limit=limit,
+                                          since=since, before=before,
+                                          access_token=access_token,
+                                          merchant=merchant)
+
+            # TODO: Raise an exception in get_transactions and allow it to
+            # bubble up, so that we don't have to check return types. Use that
+            # opportunity to create specific exceptions.
+            if isinstance(trans, basestring):
+                raise RuntimeError(trans)
+
+            for t in trans:
+                yield t
+
+            if len(trans) < limit:
+                break
+
+            # Move our cursor forward so that next page of results begins
+            # after the last transaction we received here.
+            since = t['id']
 
     def authenticate(self, access_token=None, client_id=None, user_id=None):
         """

@@ -126,11 +126,12 @@ class client():
         else:
             return API_ERRORS[r.status_code]
 
-    def get_transactions(self, account_id, limit=100, since=None,
+    def get_transactions(self, account_id=None, limit=100, since=None,
                          before=None, access_token=None, merchant=False):
-        """
-        List transactions
-        """
+        """ List transactions. Defaults to the primary account. """
+
+        if account_id is None:
+            account_id = self.get_primary_accountID()
 
         if access_token is None:
             access_token = self.deliver_token()

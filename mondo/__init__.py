@@ -12,58 +12,26 @@ API_ERRORS = {
     404: "404: Page Not Found. The endpoint requested does not exist.",
     406: "406: Not Acceptable. Your application does not accept the content \
         format returned according to the Accept headers sent in the request.",
-    429: "425: Too Many Requests. Your application is exceeding its rate limit. \
+    429: "429: Too Many Requests. Your application is exceeding its rate limit. \
           Back off, buddy.",
     500: "500: Internal Server Error. Something is wrong on our end. Whoopsie",
     504: "504 - Gateway Timeout Something has timed out on our end. Whoopsie"
 }
 
 
-class MondoClient():
-    """
-    Create a client connection and get the token for a specific account
-    using either data in config.json or email / password in the class call
-    e.g. connection = MondoClient('johnny@apple.com', 'passw0rd') or
-    connection = MondoClient() - which uses info from config.json
-    """
-    url = 'https://production-api.gmon.io/'
+class client():
+    def __init__(self, username, password, client, secret, \
+                 url="https://api.getmondo.co.uk"):
+        """ Create a client connection and get an access token. """
 
-    def __init__(self, account_id=None, acc_password=None, url=None):
-        if url is not None:
-            self.url = url
+        self.username = username
+        self.password = password
+        self.client = client
+        self.secret = secret
+        self.url = url
 
-        # grab the access token on instantiating the class
-        # Using config.json to supply client, secret
-        # ... and optionally account & password
-        try:
-            with open('./config.json') as data_file:
-                config = json.load(data_file)
-        except IOError:
-            raise Exception('No config.json file found')
+        # grab an access token as it validates the credentials
 
-        try:
-            self.client = config['client']
-            self.secret = config['secret']
-        except KeyError:
-            raise Exception('define API client / secret in config.json')
-
-        if account_id is None:
-            if 'account' in config:
-                self.account = config['account']
-            else:
-                raise Exception('No account email supplied')
-        else:
-            self.account = account_id
-
-        if acc_password is None:
-            if 'password' in config:
-                self.password = config['password']
-            else:
-                raise Exception('No account password supplied')
-        else:
-            self.password = acc_password
-
-        # With all the variables in place try to get a token for the connection
         try:
             token_response = self.get_token()
             self.token = token_response['access_token']
@@ -88,7 +56,7 @@ class MondoClient():
         if client_secret is None:
             client_secret = self.secret
         if username is None:
-            username = self.account
+            username = self.username
         if password is None:
             password = self.password
 
@@ -240,7 +208,7 @@ class MondoClient():
         if client_id is None:
             client_id = self.client
         if user_id is None:
-            user_id = self.account
+            user_id = self.username
 
         headers = {'Authorization': 'Bearer ' + str(access_token)}
         r = requests.get(self.url + '/ping/whoami', headers=headers)

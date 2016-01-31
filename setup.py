@@ -21,7 +21,7 @@ setup(
         'Tito Miguel Costa',
         'Simon Vans-Colina <simon@simon.vc>',
     )),
-    url="https://github.com/simonvc/mxondo-python",
+    url="https://github.com/simonvc/mondo-python",
     packages=["mondo"],
     tests_require=test_requirements,
     install_requires=install_requires,

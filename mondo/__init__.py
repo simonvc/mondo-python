@@ -173,7 +173,7 @@ class MondoClient(object):
             # TODO: Raise an exception in get_transactions and allow it to
             # bubble up, so that we don't have to check return types. Use that
             # opportunity to create specific exceptions.
-            if isinstance(trans, basestring):
+            if isinstance(trans, str):
                 raise RuntimeError(trans)
 
             for t in trans:

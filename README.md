@@ -51,15 +51,15 @@ If a token expires the code will use the refresh call to get a new one
 from mondo import MondoClient
 account = MondoClient('johnny@apple.com', 'p4ssw0rd', 'oauthclient_xxxx', 'client_secret')
 
-print account.get_accounts()
+print(account.get_accounts())
 first_account_id =  account.get_accounts()[0]['id']
 
 trx = account.get_transactions(account.get_primary_accountID(), limit=10)
-print trx
+print(trx)
 
 singleID = trx[1]['id']
 single = account.get_transaction(singleID)
-print single
+print(single)
 
 
 account.register_webhook(url='http://mydomain.com/transactions')

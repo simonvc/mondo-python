@@ -29,8 +29,6 @@ If that goes well and you don't get any errors...
 * account.get_primary_accountID()
 * account.create_feed_item()
 * account.register_webhook()
-
-
 * account.deliver_token()
 * account.token_refresh() 
 

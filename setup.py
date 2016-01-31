@@ -4,12 +4,12 @@ from setuptools import setup
 VERSION = '0.0.1'
 
 
-test_requires = [
+tests_requires = [
     'nose>=1.3.4',
     'responses>=0.5.1'
 ]
 
-install_requires = test_requires + [
+install_requires = tests_requires + [
     'requests>=2.4.3',
 ]
 
@@ -23,7 +23,7 @@ setup(
     )),
     url="https://github.com/simonvc/mondo-python",
     packages=["mondo"],
-    tests_require=test_requires,
+    tests_require=tests_requires,
     install_requires=install_requires,
     license="MIT",
 )

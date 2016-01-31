@@ -5,7 +5,7 @@ VERSION = '0.0.1'
 
 
 test_requirements = [
-    'nose>=1.3.7',
+    'nose>=1.3.4',
     'responses>=0.5.1'
 ]
 

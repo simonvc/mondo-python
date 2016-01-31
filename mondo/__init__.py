@@ -1,6 +1,6 @@
 import requests
-import json
 import datetime
+
 
 API_ERRORS = {
     400: "400: Bad Req. Your request has missing parameters or is malformed",
@@ -19,11 +19,10 @@ API_ERRORS = {
 }
 
 
-class client():
-    def __init__(self, username, password, client, secret, \
+class MondoClient(object):
+    def __init__(self, username, password, client, secret,
                  url="https://api.getmondo.co.uk"):
-        """ Create a client connection and get an access token. """
-
+        """Create a client connection and get an access token."""
         self.username = username
         self.password = password
         self.client = client
@@ -48,9 +47,7 @@ class client():
 
     def get_token(self, client_id=None, client_secret=None,
                   username=None, password=None):
-        """
-        Acquire an access token - uses config.JSON file for data by default
-        """
+        """Acquire an access token."""
         if client_id is None:
             client_id = self.client
         if client_secret is None:
@@ -77,11 +74,7 @@ class client():
 
     def token_refresh(self, client_id=None, client_secret=None,
                       refresh_token=None):
-        """
-        Refresh a previously acquired token
-        use config.json data by default
-        """
-
+        """Refresh a previously acquired token."""
         if client_id is None:
             client_id = self.client
         if client_secret is None:
@@ -104,11 +97,7 @@ class client():
             return API_ERRORS[r.status_code]
 
     def get_transaction(self, transaction_id, access_token=None, merchant=True):
-        """
-        Get details about a transaction
-        Uses config.json secrets by default
-        """
-
+        """Get details about a transaction."""
         if access_token is None:
             access_token = self.deliver_token()
 
@@ -128,8 +117,7 @@ class client():
 
     def get_transactions(self, account_id=None, limit=100, since=None,
                          before=None, access_token=None, merchant=False):
-        """ List transactions. Defaults to the primary account. """
-
+        """List transactions. Defaults to the primary account."""
         if account_id is None:
             account_id = self.get_primary_accountID()
 
@@ -157,8 +145,7 @@ class client():
 
     def iter_transactions(self, account_id, limit=100, since=None,
                           before=None, access_token=None, merchant=False):
-        """
-        Iterate through all transactions matching the pagination criteria.
+        """Iterate through all transactions matching the pagination criteria.
 
         Args:
             account_id: The ID of the account whose transactions we want.
@@ -200,10 +187,7 @@ class client():
             since = t['id']
 
     def authenticate(self, access_token=None, client_id=None, user_id=None):
-        """
-        authenticate user
-        """
-
+        """Authenticate user."""
         if access_token is None:
             access_token = self.deliver_token()
         if client_id is None:
@@ -220,10 +204,7 @@ class client():
             return API_ERRORS[r.status_code]
 
     def get_accounts(self, access_token=None):
-        """
-        detailed information about customer's accounts
-        uses config.json data by default
-        """
+        """Detailed information about customer's accounts."""
         if access_token is None:
             access_token = self.deliver_token()
 
@@ -237,10 +218,7 @@ class client():
             return API_ERRORS[r.status_code]
 
     def get_primary_accountID(self, access_token=None):
-        """
-        Get ID from the first account listed against an access token
-        """
-
+        """Get ID from the first account listed against an access token."""
         if access_token is None:
             access_token = self.deliver_token()
 
@@ -256,10 +234,7 @@ class client():
     def create_feed_item(self, title, image_url, background_color='#FCF1EE',
                          body_color='#FCF1EE', title_color='#333',
                          body='', account_id=None, access_token=None):
-        """
-        publish a new feed entry
-        """
-
+        """Publish a new feed entry."""
         if access_token is None:
             access_token = self.deliver_token()
         if account_id is None:
@@ -286,8 +261,7 @@ class client():
             return API_ERRORS[r.status_code]
 
     def register_webhook(self, url, account_id=None, access_token=None):
-        """
-        register a webhook
+        """Register a webhook
         instance.register_webhook(account_id, url, [access_token])
         """
         if access_token is None:
@@ -306,8 +280,7 @@ class client():
             return API_ERRORS[r.status_code]
 
     def list_webhooks(self, account_id=None, access_token=None):
-        """
-        List webhooks registered against an account
+        """List webhooks registered against an account
         instance.list_webhooks([account_id], [access_token])
         """
         if account_id is None:
@@ -326,8 +299,7 @@ class client():
             return API_ERRORS[r.status_code]
 
     def delete_webhook(self, webhook_id, access_token=None):
-        """
-        delete a webhook
+        """Delete a webhook
         instance.delete_webhook(webhook_id, [access_token])
         """
         if access_token is None:
@@ -343,10 +315,7 @@ class client():
             return API_ERRORS[r.status_code]
 
     def get_balance(self, account_id=None, access_token=None):
-        """
-        detailed information about customer's accounts
-        uses config.json data by default
-        """
+        """Detailed information about customer's accounts."""
         if access_token is None:
             access_token = self.deliver_token()
 
@@ -363,9 +332,7 @@ class client():
         else:
             return API_ERRORS[r.status_code]
 
-
     def deliver_token(self):
         if datetime.datetime.now() > self.token_expires:
             self.token_refresh()
         return self.token
-

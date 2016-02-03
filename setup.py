@@ -9,7 +9,7 @@ tests_requires = [
     'responses>=0.5.1'
 ]
 
-install_requires = tests_requires + [
+install_requires = [
     'requests>=2.4.3',
 ]
 
